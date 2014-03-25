@@ -8,14 +8,14 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
@@ -30,6 +30,11 @@ public class MainActivity extends Activity {
 	public String color = "";
 	public String type = "";
 	public String site = "";
+	
+	private String currentQuery = "";
+	private int currentIndex = 0;
+	
+	private boolean loading = false;
 	
 	private EditText etSearch;
 	private GridView gvResults;
@@ -49,11 +54,28 @@ public class MainActivity extends Activity {
 			public void onItemClick(AdapterView<?> adapter, View parent, int position,
 					long rowId) {
 				Intent i = new Intent(getApplicationContext(), ImageDisplayActivity.class);
-				ImageResult imageResult = imageResults.get(position);
-				i.putExtra("result", imageResult);
+				//ImageResult imageResult = imageResults.get(position);
+				i.putExtra("results", imageResults);
+				i.putExtra("position", position);
 				startActivity(i);
 			}
 			
+		});
+		
+		gvResults.setOnScrollListener(new OnScrollListener() {
+		    @Override
+		    public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+		    }
+
+		    @Override
+		    public void onScroll(AbsListView view, int firstVisibleItem,
+		            int visibleItemCount, int totalItemCount) {
+		        int lastInScreen = firstVisibleItem + visibleItemCount;
+		        if ((lastInScreen == totalItemCount) && !(loading)) {
+		                searchMore(view);
+		        }
+		    }
 		});
 	}
 	
@@ -116,9 +138,12 @@ public class MainActivity extends Activity {
 			siteParam = "&as_sitesearch=" + Uri.encode(site);
 		}
 		
-		String test = sizeParam + colorParam + typeParam + siteParam + "&q=" + Uri.encode(query);
+		Log.d("debug", sizeParam + colorParam + typeParam + siteParam + "&q=" + Uri.encode(query));
+		currentQuery = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8" + sizeParam + colorParam + typeParam + siteParam + "&q=" + Uri.encode(query);
 		
-		client.get("https://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&start=0" + sizeParam + colorParam + typeParam + siteParam + "&q=" + Uri.encode(query),
+		loading = true;
+		
+		client.get(currentQuery + "&start=0",
 			new JsonHttpResponseHandler() {
 				@Override
 				public void onSuccess(JSONObject response) {
@@ -131,13 +156,40 @@ public class MainActivity extends Activity {
 					catch(JSONException e) {
 						e.printStackTrace();
 					}
+					loading = false;
 				}
 			});
+		
+		currentIndex = 7; 
+	}
+	
+	public void searchMore(View v) {
+		if(currentIndex > 56) {
+			return;
+		}
+		AsyncHttpClient client = new AsyncHttpClient();
+		loading = true;
+		client.get(currentQuery + "&start=" + currentIndex,
+			new JsonHttpResponseHandler() {
+				@Override
+				public void onSuccess(JSONObject response) {
+					JSONArray imageJsonResults = null;
+					try {
+						imageJsonResults = response.getJSONObject("responseData").getJSONArray("results");
+						imageAdapter.addAll(ImageResult.fromJSONArray(imageJsonResults));
+					}
+					catch(JSONException e) {
+						e.printStackTrace();
+					}
+					loading = false;
+				}
+			});
+		
+		currentIndex += 8; 
 	}
 	
 	/*public boolean isOnline() {
-		ConnectivityManager cm =
-				(ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		if (netInfo != null && netInfo.isConnectedOrConnecting()) {
 			return true;
