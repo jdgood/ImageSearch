@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+	
+    <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight="1">
+
+    
+	    <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/hintText" />
+	
+	    <Button
+	        android:id="@+id/btReset"      
+	        android:layout_width="20dp"
+	        android:layout_height="20dp"
+	        android:layout_marginRight="5dp"
+	        android:layout_gravity="right|center_vertical"
+	        android:text="@string/reset"
+	        android:background="#00000000" />
+
+	</FrameLayout>
+    
+	<FrameLayout
+	android:layout_width="50dp"
+	android:layout_height="50dp">
+	    
+		<Button
+		    android:id="@+id/btSearch"
+		    android:layout_width="match_parent"
+			android:layout_height="match_parent"
+		    android:background="@drawable/ic_search" />
+		
+		<Button
+            android:id="@+id/btFilter"
+            android:layout_width="match_parent"
+			android:layout_height="match_parent"
+            android:background="@drawable/ic_filter" />
+		
+	</FrameLayout>
+
+</LinearLayout>

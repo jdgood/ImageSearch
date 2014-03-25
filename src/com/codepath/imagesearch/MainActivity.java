@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -14,10 +15,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.Toast;
@@ -37,6 +41,9 @@ public class MainActivity extends Activity {
 	private boolean loading = false;
 	
 	private EditText etSearch;
+	private Button btSearch;
+	private Button btFilter;
+	
 	private GridView gvResults;
 	private ArrayList<ImageResult> imageResults = new ArrayList<ImageResult>();
 	private ImageResultArrayAdapter imageAdapter;
@@ -46,7 +53,12 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		setupActionbar();
 		setupViews();
+	}
+	
+	private void setupViews() {		
+		gvResults = (GridView) findViewById(R.id.gvResults);
 		imageAdapter = new ImageResultArrayAdapter(this, imageResults);
 		gvResults.setAdapter(imageAdapter);
 		gvResults.setOnItemClickListener(new OnItemClickListener() {
@@ -79,9 +91,30 @@ public class MainActivity extends Activity {
 		});
 	}
 	
-	private void setupViews() {
-		etSearch = (EditText) findViewById(R.id.etSearch);
-		etSearch.setOnKeyListener(new View.OnKeyListener() {
+	private void setupActionbar() {
+		ActionBar actionBar = getActionBar();
+	    // add the custom view to the action bar
+	    actionBar.setCustomView(R.layout.search_bar);
+	    
+	    btSearch = (Button) actionBar.getCustomView().findViewById(R.id.btSearch);
+	    btSearch.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onSearch(v);
+			}
+		});
+	    
+	    btFilter = (Button) actionBar.getCustomView().findViewById(R.id.btFilter);
+	    btFilter.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onFilter(v);
+			}
+		});
+	    btFilter.setVisibility(View.GONE);
+	    
+	    etSearch = (EditText) actionBar.getCustomView().findViewById(R.id.etSearch);
+	    etSearch.setOnKeyListener(new View.OnKeyListener() {
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
 						(keyCode == KeyEvent.KEYCODE_ENTER)) {
@@ -91,11 +124,28 @@ public class MainActivity extends Activity {
 				return false;
 			}
 		});
-		
-		gvResults = (GridView) findViewById(R.id.gvResults);
+	    etSearch.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				btSearch.setVisibility(View.VISIBLE);
+    			btFilter.setVisibility(View.GONE);
+			}
+		});
+	    
+	    Button btReset = (Button) actionBar.getCustomView().findViewById(R.id.btReset);
+	    btReset.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onReset(v);
+			}
+		});
+	    
+	    actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);// | ActionBar.DISPLAY_SHOW_HOME);
 	}
 	
 	public void onSearch(View v) {
+		btSearch.setVisibility(View.GONE);
+		btFilter.setVisibility(View.VISIBLE);
 		String query = etSearch.getText().toString();
 		if(query.equals("")) {
 			return;
@@ -204,6 +254,7 @@ public class MainActivity extends Activity {
 	
 	public void onReset(View v) {
 		etSearch.setText("");
+		currentQuery = "";
 		
 		size = "";
 		color = "";
@@ -213,6 +264,6 @@ public class MainActivity extends Activity {
 		loading = false;
 		
 		imageResults.clear();
-		imageAdapter.notifyDataSetChanged();		
+		imageAdapter.notifyDataSetChanged();
 	}
 }
