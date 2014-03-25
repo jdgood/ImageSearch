@@ -210,6 +210,8 @@ public class MainActivity extends Activity {
 		type = "";
 		site = "";
 		
+		loading = false;
+		
 		imageResults.clear();
 		imageAdapter.notifyDataSetChanged();		
 	}
