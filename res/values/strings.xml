@@ -6,7 +6,6 @@
     <string name="action_settings">Settings</string>
     <string name="hintText">Search...</string>
     <string name="reset">X</string>
-    <string name="filter">Filter</string>
     <string name="title_activity_image_display">ImageDisplayActivity</string>
     <string name="apply">Apply</string>
     <string name="cancel">Cancel</string>
